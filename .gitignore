@@ -4,6 +4,7 @@ rsa-sign
 .d/*
 cbcmac-tag
 cbcmac-validate
+rsa-keygen
 lock
 rsa-validate
 unlock

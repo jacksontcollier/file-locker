@@ -3,8 +3,9 @@ $(shell mkdir -p $(DEPDIR) >/dev/null)
 CC = gcc
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 CFLAGS = -Wall
-SRCS = rsa-sign.c rsa-validate.c cbcmac-tag.c cbcmac-validate.c lock.c unlock.c
-TARGET_EXE = rsa-sign rsa-validate cbcmac-tag cbcmac-validate lock unlock
+LFLAGS = -lssl -lcrypto
+SRCS = rsa-sign.c rsa-validate.c cbcmac-tag.c cbcmac-validate.c rsa-keygen.c lock.c unlock.c
+TARGET_EXE = rsa-sign rsa-validate cbcmac-tag cbcmac-validate rsa-keygen lock unlock
 
 .PHONY: all
 all: $(TARGET_EXE)
@@ -23,6 +24,9 @@ cbcmac-tag: cbcmac-tag.o
 
 cbcmac-validate: cbcmac-validate.o
 	$(CC) cbcmac-validate.o -o cbcmac-validate
+
+rsa-keygen: rsa-keygen.o padded-rsa.o
+	$(CC) rsa-keygen.o padded-rsa.o $(LFLAGS) -o rsa-keygen
 
 lock: lock.o
 	$(CC) lock.o -o lock
