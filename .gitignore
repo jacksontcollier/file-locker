@@ -2,3 +2,8 @@
 **.o
 rsa-sign
 .d/*
+cbcmac-tag
+cbcmac-validate
+lock
+rsa-validate
+unlock
