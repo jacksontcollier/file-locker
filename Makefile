@@ -2,7 +2,7 @@ DEPDIR := .d
 $(shell mkdir -p $(DEPDIR) >/dev/null)
 CC = gcc
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
-CFLAGS = -Wall -std=c99
+CFLAGS = -Wall -std=gnu11
 LFLAGS = -lssl -lcrypto
 SRCS = rsa-sign.c rsa-validate.c cbcmac-tag.c cbcmac-validate.c rsa-keygen.c lock.c unlock.c
 TARGET_EXE = rsa-sign rsa-validate cbcmac-tag cbcmac-validate rsa-keygen lock unlock
