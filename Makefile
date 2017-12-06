@@ -2,13 +2,17 @@ DEPDIR := .d
 $(shell mkdir -p $(DEPDIR) >/dev/null)
 CC = gcc
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
-CFLAGS = -Wall
+CFLAGS = -Wall -std=c99
 LFLAGS = -lssl -lcrypto
 SRCS = rsa-sign.c rsa-validate.c cbcmac-tag.c cbcmac-validate.c rsa-keygen.c lock.c unlock.c
 TARGET_EXE = rsa-sign rsa-validate cbcmac-tag cbcmac-validate rsa-keygen lock unlock
 
 .PHONY: all
 all: $(TARGET_EXE)
+
+.PHONY: clean
+clean:
+	rm *.o .d/* $(TARGET_EXE)
 
 COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) -c
 POSTCCOMPILE = @mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d && touch $@
@@ -36,7 +40,7 @@ unlock: unlock.o
 
 %.o : %.c
 %.o : %.c $(DEPDIR)/%.d
-	$(COMPILE.c) $(OUTPUT_OPTION) $<
+	$(COMPILE.c) $<
 	$(POSTCOMPILE)
 
 $(DEPDIR)/%d: ;
