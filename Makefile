@@ -5,42 +5,72 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 CFLAGS = -Wall -std=gnu11
 LFLAGS = -lssl -lcrypto
 SRCS = rsa-sign.c rsa-validate.c cbcmac-tag.c cbcmac-validate.c rsa-keygen.c lock.c unlock.c
-TARGET_EXE = rsa-sign rsa-validate cbcmac-tag cbcmac-validate rsa-keygen lock unlock
+TARGET_EXE = $(BINDIR)/rsa-sign $(BINDIR)/rsa-validate $(BINDIR)/cbcmac-tag \
+             $(BINDIR)/cbcmac-validate $(BINDIR)/rsa-keygen $(BINDIR)/lock \
+	     $(BINDIR)/unlock
+TARGET_LN = rsa-sign rsa-validate cbcmac-tag cbcmac-validate rsa-keygen lock unlock
+SRCDIR = src
+BINDIR = bin
+OUTPUT_OPTS = -o $@
 
 .PHONY: all
-all: $(TARGET_EXE)
+all: BUILDDIRS $(TARGET_EXE) $(TARGET_LN)
 
 .PHONY: clean
 clean:
-	rm *.o .d/* $(TARGET_EXE)
+	rm -rf $(BINDIR)/* .d/* $(TARGET_LN)
 
 COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) -c
 POSTCCOMPILE = @mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d && touch $@
 
-rsa-sign: rsa-sign.o
-	$(CC) rsa-sign.o -o rsa-sign
+BUILDDIRS:
+	$(shell mkdir -p bin)
 
-rsa-validate: rsa-validate.o
-	$(CC) rsa-validate.o -o rsa-validate
+rsa-sign: $(BINDIR)/rsa-sign
+	$(shell ln -s $(BINDIR)/rsa-sign rsa-sign)
 
-cbcmac-tag: cbcmac-tag.o
-	$(CC) cbcmac-tag.o -o cbcmac-tag
+rsa-validate: $(BINDIR)/rsa-validate
+	$(shell ln -s $(BINDIR)/rsa-validate rsa-validate)
 
-cbcmac-validate: cbcmac-validate.o
-	$(CC) cbcmac-validate.o -o cbcmac-validate
+cbcmac-tag: $(BINDIR)/cbcmac-tag
+	$(shell ln -s $(BINDIR)/cbcmac-tag cbcmac-tag)
 
-rsa-keygen: rsa-keygen.o padded-rsa.o
-	$(CC) rsa-keygen.o padded-rsa.o $(LFLAGS) -o rsa-keygen
+cbcmac-validate: $(BINDIR)/cbcmac-validate
+	$(shell ln -s $(BINDIR)/cbcmac-validate cbcmac-validate)
 
-lock: lock.o
-	$(CC) lock.o -o lock
+rsa-keygen: $(BINDIR)/rsa-keygen
+	$(shell ln -s $(BINDIR)/rsa-keygen rsa-keygen)
 
-unlock: unlock.o
-	$(CC) unlock.o -o unlock
+lock: $(BINDIR)/lock
+	$(shell ln -s $(BINDIR)/lock lock)
 
-%.o : %.c
-%.o : %.c $(DEPDIR)/%.d
-	$(COMPILE.c) $<
+unlock: $(BINDIR)/unlock
+	$(shell ln -s $(BINDIR)/unlock unlock)
+
+$(BINDIR)/rsa-sign: $(BINDIR)/rsa-sign.o
+	$(CC) $(BINDIR)/rsa-sign.o -o $(BINDIR)/rsa-sign
+
+$(BINDIR)/rsa-validate: $(BINDIR)/rsa-validate.o
+	$(CC) $(BINDIR)/rsa-validate.o -o $(BINDIR)/rsa-validate
+
+$(BINDIR)/cbcmac-tag: $(BINDIR)/cbcmac-tag.o
+	$(CC) $(BINDIR)/cbcmac-tag.o -o $(BINDIR)/cbcmac-tag
+
+$(BINDIR)/cbcmac-validate: $(BINDIR)/cbcmac-validate.o
+	$(CC) $(BINDIR)/cbcmac-validate.o -o $(BINDIR)/cbcmac-validate
+
+$(BINDIR)/rsa-keygen: $(BINDIR)/rsa-keygen.o $(BINDIR)/padded-rsa.o
+	$(CC) $(BINDIR)/rsa-keygen.o $(BINDIR)/padded-rsa.o $(LFLAGS) -o $(BINDIR)/rsa-keygen
+
+$(BINDIR)/lock: $(BINDIR)/lock.o
+	$(CC) $(BINDIR)/lock.o -o $(BINDIR)/lock
+
+$(BINDIR)/unlock: $(BINDIR)/unlock.o
+	$(CC) $(BINDIR)/unlock.o -o $(BINDIR)/unlock
+
+$(BINDIR)/%.o : $(SRCDIR)/%.c
+$(BINDIR)/%.o : $(SRCDIR)/%.c $(DEPDIR)/%.d
+	$(COMPILE.c) $< $(OUTPUT_OPTS)
 	$(POSTCOMPILE)
 
 $(DEPDIR)/%d: ;
