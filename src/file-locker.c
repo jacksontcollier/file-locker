@@ -112,6 +112,7 @@ FileLockerOptions* new_FileLockerOptions()
 FileLockerOptions* parse_FileLockerOptions(int argc, char * const argv[])
 {
   int option;
+  int should_read_validating_public_key = 0;
   FileLockerOptions* file_locker_options = new_FileLockerOptions();
 
   while ((option = getopt(argc, argv, file_locker_arg_options)) != -1) {
@@ -126,14 +127,28 @@ FileLockerOptions* parse_FileLockerOptions(int argc, char * const argv[])
         file_locker_options->action_private_key = optarg;
         break;
       case 'v':
-        file_locker_options->validating_public_key = optarg;
+        should_read_validating_public_key = 1;
+        break;
+      case 'k':
+        if (should_read_validating_public_key) {
+          file_locker_options->validating_public_key = optarg;
+        }
         break;
       default:
-        fprintf(stderr, "Unknown command line option\n");
+        fprintf(stderr, "Unknown command line option %c\n", option);
         exit(1);
     }
   }
 
   return file_locker_options;
+}
+
+void print_FileLockerOptions(const FileLockerOptions* file_locker_options)
+{
+  printf("Directory: %s\n", file_locker_options->directory);
+  printf("Action Public Key: %s\n", file_locker_options->action_public_key);
+  printf("Action Private Key: %s\n", file_locker_options->action_private_key);
+  printf("Validating Public Key: %s\n",
+      file_locker_options->validating_public_key);
 }
 

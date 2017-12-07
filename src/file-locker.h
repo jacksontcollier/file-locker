@@ -38,4 +38,6 @@ typedef struct file_locker_options
 FileLockerOptions* new_FileLockerOptions();
 
 FileLockerOptions* parse_FileLockerOptions(int argc, char * const argv[]);
+
+void print_FileLockerOptions(const FileLockerOptions* file_locker_options);
 #endif
