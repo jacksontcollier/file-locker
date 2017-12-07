@@ -43,6 +43,13 @@ RSASigOptions* parse_RSASigOptions(int argc, char * const argv[])
   return rsa_sig_options;
 }
 
+void print_RSASigOptions(const RSASigOptions* rsa_sig_options)
+{
+  printf("Key file: %s\n", rsa_sig_options->key_file);
+  printf("Message file: %s\n", rsa_sig_options->message_file);
+  printf("Signature file: %s\n", rsa_sig_options->sig_file);
+}
+
 const char* cbc_mac_arg_options = "k:m:t:";
 
 CBCMacOptions* new_CBCMacOptions()
@@ -79,6 +86,13 @@ CBCMacOptions* parse_CBCMacOptions(int argc, char * const argv[])
   }
 
   return cbc_mac_options;
+}
+
+void print_CBCMacOptions(const CBCMacOptions* cbc_mac_options)
+{
+  printf("Key file: %s\n", cbc_mac_options->key_file);
+  printf("Message file: %s\n", cbc_mac_options->message_file);
+  printf("Output file: %s\n", cbc_mac_options->output_file);
 }
 
 const char* file_locker_arg_options = "d:p:r:vk:";

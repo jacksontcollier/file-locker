@@ -52,23 +52,26 @@ $(BINDIR)/rsa-sign: $(BINDIR)/rsa-sign.o $(BINDIR)/file-locker.o
 	$(CC) $(BINDIR)/rsa-sign.o $(BINDIR)/file-locker.o -o \
 	$(BINDIR)/rsa-sign
 
-$(BINDIR)/rsa-validate: $(BINDIR)/rsa-validate.o
-	$(CC) $(BINDIR)/rsa-validate.o -o $(BINDIR)/rsa-validate
+$(BINDIR)/rsa-validate: $(BINDIR)/rsa-validate.o $(BINDIR)/file-locker.o
+	$(CC) $(BINDIR)/rsa-validate.o $(BINDIR)/file-locker.o -o \
+	$(BINDIR)/rsa-validate
 
-$(BINDIR)/cbcmac-tag: $(BINDIR)/cbcmac-tag.o
-	$(CC) $(BINDIR)/cbcmac-tag.o -o $(BINDIR)/cbcmac-tag
+$(BINDIR)/cbcmac-tag: $(BINDIR)/cbcmac-tag.o $(BINDIR)/file-locker.o
+	$(CC) $(BINDIR)/cbcmac-tag.o $(BINDIR)/file-locker.o -o \
+	$(BINDIR)/cbcmac-tag
 
-$(BINDIR)/cbcmac-validate: $(BINDIR)/cbcmac-validate.o
-	$(CC) $(BINDIR)/cbcmac-validate.o -o $(BINDIR)/cbcmac-validate
+$(BINDIR)/cbcmac-validate: $(BINDIR)/cbcmac-validate.o $(BINDIR)/file-locker.o
+	$(CC) $(BINDIR)/cbcmac-validate.o $(BINDIR)/file-locker.o -o \
+	$(BINDIR)/cbcmac-validate
 
 $(BINDIR)/rsa-keygen: $(BINDIR)/rsa-keygen.o $(BINDIR)/padded-rsa.o
 	$(CC) $(BINDIR)/rsa-keygen.o $(BINDIR)/padded-rsa.o $(LFLAGS) -o $(BINDIR)/rsa-keygen
 
-$(BINDIR)/lock: $(BINDIR)/lock.o
-	$(CC) $(BINDIR)/lock.o -o $(BINDIR)/lock
+$(BINDIR)/lock: $(BINDIR)/lock.o $(BINDIR)/file-locker.o
+	$(CC) $(BINDIR)/lock.o $(BINDIR)/file-locker.o -o $(BINDIR)/lock
 
-$(BINDIR)/unlock: $(BINDIR)/unlock.o
-	$(CC) $(BINDIR)/unlock.o -o $(BINDIR)/unlock
+$(BINDIR)/unlock: $(BINDIR)/unlock.o $(BINDIR)/file-locker.o
+	$(CC) $(BINDIR)/unlock.o $(BINDIR)/file-locker.o -o $(BINDIR)/unlock
 
 $(BINDIR)/%.o : $(SRCDIR)/%.c
 $(BINDIR)/%.o : $(SRCDIR)/%.c $(DEPDIR)/%.d

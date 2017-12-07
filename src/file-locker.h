@@ -12,6 +12,8 @@ RSASigOptions* new_RSASigOptions();
 
 RSASigOptions* parse_RSASigOptions(int argc, char * const argv[]);
 
+void print_RSASigOptions(const RSASigOptions* rsa_sig_options);
+
 typedef struct cbc_mac_options
 {
   char* key_file;
@@ -22,6 +24,8 @@ typedef struct cbc_mac_options
 CBCMacOptions* new_CBCMacOptions();
 
 CBCMacOptions* parse_CBCMacOptions(int argc, char * const argv[]);
+
+void print_CBCMacOptions(const CBCMacOptions* cbc_mac_options);
 
 typedef struct file_locker_options
 {
