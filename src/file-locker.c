@@ -1,8 +1,14 @@
 #include "file-locker.h"
+#include "padded-rsa.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+
+#include <openssl/sha.h>
+
+#define SHA_256_BYTE_LEN 32
 
 const char* rsa_sig_arg_options = "k:m:s:";
 
@@ -48,6 +54,45 @@ void print_RSASigOptions(const RSASigOptions* rsa_sig_options)
   printf("Key file: %s\n", rsa_sig_options->key_file);
   printf("Message file: %s\n", rsa_sig_options->message_file);
   printf("Signature file: %s\n", rsa_sig_options->sig_file);
+}
+
+unsigned char* sha_256_hash(char* data, size_t data_size)
+{
+  unsigned char* hash = malloc(SHA_256_BYTE_LEN);
+  hash = SHA256((unsigned char*) data, data_size, hash);
+  return hash;
+}
+
+int rsa_sign(const RSASigOptions* rsa_sig_options)
+{
+  FILE* secret_rsa_key_fin = fopen(rsa_sig_options->key_file, "r");
+  SecretRSAKey* secret_rsa_key = read_file_SecretRSAKey(secret_rsa_key_fin);
+  fclose(secret_rsa_key_fin);
+
+  FILE* message_fin = fopen(rsa_sig_options->message_file, "r");
+  char* message = read_single_line_file(message_fin);
+  fclose(message_fin);
+
+  // Hash message using SHA 256
+  unsigned char* message_hash = sha_256_hash(message, strlen(message));
+
+  // Encode hashed message as BN
+  BIGNUM* message_hash_bn = BN_new();
+  message_hash_bn = BN_bin2bn(message_hash, SHA_256_BYTE_LEN,
+      message_hash_bn);
+
+  // Sign Hash, raise hash to d, mod N
+  BN_CTX* bn_ctx = BN_CTX_new();
+  BIGNUM* sig_bn = BN_new();
+  BN_mod_exp(sig_bn, message_hash_bn, secret_rsa_key->d, secret_rsa_key->N,
+      bn_ctx);
+
+  FILE* sig_fout = fopen(rsa_sig_options->sig_file, "w");
+  fprintf(sig_fout, "%s", BN_bn2dec(sig_bn));
+  fclose(sig_fout);
+  BN_CTX_free(bn_ctx);
+
+  return 1;
 }
 
 const char* cbc_mac_arg_options = "k:m:t:";
@@ -150,5 +195,16 @@ void print_FileLockerOptions(const FileLockerOptions* file_locker_options)
   printf("Action Private Key: %s\n", file_locker_options->action_private_key);
   printf("Validating Public Key: %s\n",
       file_locker_options->validating_public_key);
+}
+
+char* read_single_line_file(FILE* fin)
+{
+  char* contents = NULL;
+  size_t getline_buf_size = 0;
+
+  getline(&contents, &getline_buf_size, fin);
+  strip_newline(contents);
+
+  return contents;
 }
 

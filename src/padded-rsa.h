@@ -3,6 +3,8 @@
 
 #include <openssl/bn.h>
 
+void strip_newline(char* s);
+
 typedef struct rsa_enc_dec_options
 {
   char* key_file;

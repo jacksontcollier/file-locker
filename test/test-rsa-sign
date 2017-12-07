@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd ../bin
+
+./rsa-sign -k ../test/test-rsa-sig-secret-key -m ../test/test-rsa-sig-message -s ../test/test-rsa-sig-signature
