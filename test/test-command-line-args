@@ -1,0 +1,12 @@
+#!/bin/bash
+
+cd ../bin
+
+printf "rsa-sign\n"
+printf "========\n"
+./rsa-sign -k test-key-file -m test-message-file -s test-signature-file
+printf "\n"
+
+printf "rsa-validate\n"
+printf "============\n"
+./rsa-validate -k test-key-file -m test-message-file -s test-signature-file
