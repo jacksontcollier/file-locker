@@ -4,7 +4,8 @@ CC = gcc
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 CFLAGS = -Wall -std=gnu11
 LFLAGS = -lssl -lcrypto
-SRCS = rsa-sign.c rsa-validate.c cbcmac-tag.c cbcmac-validate.c rsa-keygen.c lock.c unlock.c
+SRCS = rsa-sign.c rsa-validate.c cbcmac-tag.c cbcmac-validate.c rsa-keygen.c \
+       lock.c unlock.c file-locker.c
 TARGET_EXE = $(BINDIR)/rsa-sign $(BINDIR)/rsa-validate $(BINDIR)/cbcmac-tag \
              $(BINDIR)/cbcmac-validate $(BINDIR)/rsa-keygen $(BINDIR)/lock \
 	     $(BINDIR)/unlock
@@ -47,8 +48,9 @@ lock: $(BINDIR)/lock
 unlock: $(BINDIR)/unlock
 	$(shell ln -s $(BINDIR)/unlock unlock)
 
-$(BINDIR)/rsa-sign: $(BINDIR)/rsa-sign.o
-	$(CC) $(BINDIR)/rsa-sign.o -o $(BINDIR)/rsa-sign
+$(BINDIR)/rsa-sign: $(BINDIR)/rsa-sign.o $(BINDIR)/file-locker.o
+	$(CC) $(BINDIR)/rsa-sign.o $(BINDIR)/file-locker.o -o \
+	$(BINDIR)/rsa-sign
 
 $(BINDIR)/rsa-validate: $(BINDIR)/rsa-validate.o
 	$(CC) $(BINDIR)/rsa-validate.o -o $(BINDIR)/rsa-validate
