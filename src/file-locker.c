@@ -95,6 +95,44 @@ int rsa_sign(const RSASigOptions* rsa_sig_options)
   return 1;
 }
 
+int rsa_validate(const RSASigOptions* rsa_sig_options)
+{
+  FILE* public_rsa_key_fin = fopen(rsa_sig_options->key_file, "r");
+  PublicRSAKey* public_rsa_key = read_file_PublicRSAKey(public_rsa_key_fin);
+  fclose(public_rsa_key_fin);
+
+  FILE* message_fin = fopen(rsa_sig_options->message_file, "r");
+  char* message = read_single_line_file(message_fin);
+  fclose(message_fin);
+
+  FILE* sig_fin = fopen(rsa_sig_options->sig_file, "r");
+  char* sig = read_single_line_file(sig_fin);
+  fclose(sig_fin);
+
+  unsigned char* message_hash = sha_256_hash(message, strlen(message));
+
+  BIGNUM* message_hash_bn = BN_new();
+  message_hash_bn = BN_bin2bn(message_hash, SHA_256_BYTE_LEN,
+      message_hash_bn);
+
+  BN_CTX* bn_ctx = BN_CTX_new();
+
+  BIGNUM* message_hash_mod_N = BN_new();
+  BN_mod(message_hash_mod_N, message_hash_bn, public_rsa_key->N, bn_ctx);
+  BIGNUM* sig_bn = BN_new();
+  BN_dec2bn(&sig_bn, sig);
+
+  BIGNUM* inverted_sig_bn = BN_new();
+  BN_mod_exp(inverted_sig_bn, sig_bn, public_rsa_key->e, public_rsa_key->N,
+      bn_ctx);
+
+  if (BN_cmp(inverted_sig_bn, message_hash_mod_N) == 0) {
+    return 1;
+  }
+
+  return 0;
+}
+
 const char* cbc_mac_arg_options = "k:m:t:";
 
 CBCMacOptions* new_CBCMacOptions()

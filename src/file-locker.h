@@ -21,6 +21,8 @@ unsigned char* sha_256_hash(char* data, size_t data_size);
 
 int rsa_sign(const RSASigOptions* rsa_sig_options);
 
+int rsa_validate(const RSASigOptions* rsa_sig_options);
+
 typedef struct cbc_mac_options
 {
   char* key_file;
