@@ -2,9 +2,9 @@ source ~/.vimrc
 
 colo github
 
-let NERDTreeIgnore = ['cbcmac-tag$', 'cbcmac-validate$', 'lock$',
-                    \ 'rsa-keygen$', 'rsa-sign$', 'rsa-validate$', 'unlock$',
-                    \ 'Session.vim$']
+let NERDTreeIgnore = ['^cbcmac-tag$', '^cbcmac-validate$', '^lock$',
+                    \ '^rsa-keygen$', '^rsa-sign$', '^rsa-validate$', '^unlock$',
+                    \ '^Session.vim$']
 
 autocmd VimLeave * NERDTreeClose
 autocmd VimLeave * mksession!
