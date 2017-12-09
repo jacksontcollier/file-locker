@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd ../bin
+
+./cbcmac-tag -k ../test/test-aes-key -m ../test/test-cbcmac-tag-message -t ../test/test-cbcmac-test-signature

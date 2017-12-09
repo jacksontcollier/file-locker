@@ -1,4 +1,5 @@
 #include "file-locker.h"
+#include "aes-modes.h"
 #include "padded-rsa.h"
 
 #include <stdio.h>
@@ -8,6 +9,7 @@
 
 #include <openssl/sha.h>
 
+#define AES_BLOCK_BYTE_LEN 16
 #define SHA_256_BYTE_LEN 32
 
 const char* rsa_sig_arg_options = "k:m:s:";
@@ -176,6 +178,27 @@ void print_CBCMacOptions(const CBCMacOptions* cbc_mac_options)
   printf("Key file: %s\n", cbc_mac_options->key_file);
   printf("Message file: %s\n", cbc_mac_options->message_file);
   printf("Output file: %s\n", cbc_mac_options->output_file);
+}
+
+int cbc_mac_tag(const CBCMacOptions* cbc_mac_options)
+{
+  AesKey* aes_key = get_aes_key(cbc_mac_options->key_file);
+  ByteBuf* message = get_cbc_plaintext(cbc_mac_options->message_file);
+
+  /* Allocate zero-initialized iv */
+  ByteBuf* iv = new_ByteBuf();
+  iv->len = AES_BLOCK_BYTE_LEN;
+  iv->data = calloc(iv->len, 1);
+
+  /* Cbc encrypt message */
+  ByteBuf* cbc_ciphertext = cbc_aes_encrypt(aes_key, message, iv);
+
+  FILE* tag_fout = fopen(cbc_mac_options->output_file, "w");
+  fwrite((void *) &cbc_ciphertext->data[cbc_ciphertext->len - AES_BLOCK_BYTE_LEN],
+  1, AES_BLOCK_BYTE_LEN, tag_fout);
+  fclose(tag_fout);
+
+  return 1;
 }
 
 const char* file_locker_arg_options = "d:p:r:vk:";

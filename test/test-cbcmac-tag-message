@@ -1,0 +1,15 @@
+This is a test message for the cbcmac-tag program.
+cbcmac-tag will build a tag for a give file (message)
+cbcmac-validate Will validate a tag for a given file and tag. The results of
+this program should be printed to standard out as either True (validates) or
+False (does not validate).
+
+These executables should take the following argument flags:
+-k <key file> : required, specifies a file storing a valid Aes key as a hex
+encoded string.
+
+-m <message file> : required, specifies the path of the message file is being
+store.
+
+-t <output file> : required, specifies the path of the tag file, either as
+output for the cbcmac-tag or as an input for cbcmac-validate.

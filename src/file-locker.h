@@ -36,6 +36,8 @@ CBCMacOptions* parse_CBCMacOptions(int argc, char * const argv[]);
 
 void print_CBCMacOptions(const CBCMacOptions* cbc_mac_options);
 
+int cbc_mac_tag(const CBCMacOptions* cbc_mac_options);
+
 typedef struct file_locker_options
 {
   char* directory;

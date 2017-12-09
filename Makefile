@@ -2,8 +2,8 @@ DEPDIR := .d
 $(shell mkdir -p $(DEPDIR) >/dev/null)
 CC = gcc
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
-CFLAGS = -Wall -std=gnu11
-LFLAGS = -lssl -lcrypto
+CFLAGS = -Wall -std=gnu11 -g
+LFLAGS = -lssl -lcrypto -pthread
 SRCS = rsa-sign.c rsa-validate.c cbcmac-tag.c cbcmac-validate.c rsa-keygen.c \
        lock.c unlock.c file-locker.c
 TARGET_EXE = $(BINDIR)/rsa-sign $(BINDIR)/rsa-validate $(BINDIR)/cbcmac-tag \
@@ -49,35 +49,42 @@ unlock: $(BINDIR)/unlock
 	$(shell ln -s $(BINDIR)/unlock unlock)
 
 $(BINDIR)/rsa-sign: $(BINDIR)/rsa-sign.o $(BINDIR)/file-locker.o \
-                    $(BINDIR)/padded-rsa.o
+                    $(BINDIR)/padded-rsa.o $(BINDIR)/aes-modes.o
 	$(CC) $(BINDIR)/rsa-sign.o $(BINDIR)/file-locker.o \
-	$(BINDIR)/padded-rsa.o $(LFLAGS) -o $(BINDIR)/rsa-sign
+	$(BINDIR)/padded-rsa.o $(BINDIR)/aes-modes.o $(LFLAGS) \
+	-o $(BINDIR)/rsa-sign
 
 $(BINDIR)/rsa-validate: $(BINDIR)/rsa-validate.o $(BINDIR)/file-locker.o \
-			$(BINDIR)/padded-rsa.o
+			$(BINDIR)/padded-rsa.o $(BINDIR)/aes-modes.o
 	$(CC) $(BINDIR)/rsa-validate.o $(BINDIR)/file-locker.o \
-	$(BINDIR)/padded-rsa.o $(LFLAGS) -o $(BINDIR)/rsa-validate
+	$(BINDIR)/padded-rsa.o $(BINDIR)/aes-modes.o $(LFLAGS) \
+	-o $(BINDIR)/rsa-validate
 
 $(BINDIR)/cbcmac-tag: $(BINDIR)/cbcmac-tag.o $(BINDIR)/file-locker.o \
-		      $(BINDIR)/padded-rsa.o
+		      $(BINDIR)/padded-rsa.o $(BINDIR)/aes-modes.o
 	$(CC) $(BINDIR)/cbcmac-tag.o $(BINDIR)/file-locker.o \
-	$(BINDIR)/padded-rsa.o $(LFLAGS) -o $(BINDIR)/cbcmac-tag
+	$(BINDIR)/padded-rsa.o $(BINDIR)/aes-modes.o $(LFLAGS) \
+	-o $(BINDIR)/cbcmac-tag
 
-$(BINDIR)/cbcmac-validate: $(BINDIR)/cbcmac-validate.o $(BINDIR)/file-locker.o \
-			   $(BINDIR)/padded-rsa.o
+$(BINDIR)/cbcmac-validate: $(BINDIR)/cbcmac-validate.o \
+			   $(BINDIR)/file-locker.o $(BINDIR)/padded-rsa.o \
+			   $(BINDIR)/aes-modes.o
 	$(CC) $(BINDIR)/cbcmac-validate.o $(BINDIR)/file-locker.o \
-	$(BINDIR)/padded-rsa.o $(LFLAGS) -o $(BINDIR)/cbcmac-validate
+	$(BINDIR)/padded-rsa.o $(BINDIR)/aes-modes.o $(LFLAGS) -o \
+	$(BINDIR)/cbcmac-validate
 
 $(BINDIR)/rsa-keygen: $(BINDIR)/rsa-keygen.o $(BINDIR)/padded-rsa.o
 	$(CC) $(BINDIR)/rsa-keygen.o $(BINDIR)/padded-rsa.o $(LFLAGS) -o $(BINDIR)/rsa-keygen
 
-$(BINDIR)/lock: $(BINDIR)/lock.o $(BINDIR)/file-locker.o $(BINDIR)/padded-rsa.o
+$(BINDIR)/lock: $(BINDIR)/lock.o $(BINDIR)/file-locker.o \
+		$(BINDIR)/padded-rsa.o $(BINDIR)/aes-modes.o
 	$(CC) $(BINDIR)/lock.o $(BINDIR)/file-locker.o $(BINDIR)/padded-rsa.o \
-	$(LFLAGS) -o $(BINDIR)/lock
+	$(BINDIR)/aes-modes.o $(LFLAGS) -o $(BINDIR)/lock
 
-$(BINDIR)/unlock: $(BINDIR)/unlock.o $(BINDIR)/file-locker.o $(BINDIR)/padded-rsa.o
-	$(CC) $(BINDIR)/unlock.o $(BINDIR)/file-locker.o \
-	$(BINDIR)/padded-rsa.o $(LFLAGS) -o $(BINDIR)/unlock
+$(BINDIR)/unlock: $(BINDIR)/unlock.o $(BINDIR)/file-locker.o \
+		  $(BINDIR)/padded-rsa.o $(BINDIR)/aes-modes.o
+	$(CC) $(BINDIR)/unlock.o $(BINDIR)/file-locker.o $(BINDIR)/padded-rsa.o \
+	$(BINDIR)/aes-modes.o $(LFLAGS) -o $(BINDIR)/unlock
 
 $(BINDIR)/%.o : $(SRCDIR)/%.c
 $(BINDIR)/%.o : $(SRCDIR)/%.c $(DEPDIR)/%.d
