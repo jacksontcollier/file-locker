@@ -1,6 +1,8 @@
 #ifndef FILELOCKER_H
 #define FILELOCKER_H
 
+#include "aes-modes.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -36,7 +38,11 @@ CBCMacOptions* parse_CBCMacOptions(int argc, char * const argv[]);
 
 void print_CBCMacOptions(const CBCMacOptions* cbc_mac_options);
 
+ByteBuf* generate_cbc_mac_tag(AesKey* aes_key, ByteBuf* padded_message);
+
 int cbc_mac_tag(const CBCMacOptions* cbc_mac_options);
+
+int cbc_mac_validate(const CBCMacOptions* cbc_mac_options);
 
 typedef struct file_locker_options
 {

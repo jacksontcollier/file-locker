@@ -180,25 +180,62 @@ void print_CBCMacOptions(const CBCMacOptions* cbc_mac_options)
   printf("Output file: %s\n", cbc_mac_options->output_file);
 }
 
-int cbc_mac_tag(const CBCMacOptions* cbc_mac_options)
+ByteBuf* generate_cbc_mac_tag(AesKey* aes_key, ByteBuf* padded_message)
 {
-  AesKey* aes_key = get_aes_key(cbc_mac_options->key_file);
-  ByteBuf* message = get_cbc_plaintext(cbc_mac_options->message_file);
-
   /* Allocate zero-initialized iv */
   ByteBuf* iv = new_ByteBuf();
   iv->len = AES_BLOCK_BYTE_LEN;
   iv->data = calloc(iv->len, 1);
 
-  /* Cbc encrypt message */
-  ByteBuf* cbc_ciphertext = cbc_aes_encrypt(aes_key, message, iv);
+  /* cbc encrypt message */
+  ByteBuf* ciphertext = cbc_aes_encrypt(aes_key, padded_message, iv);
+
+  /* extract tag as last block of ciphertext */
+  ByteBuf* tag = new_ByteBuf();
+  tag->len = AES_BLOCK_BYTE_LEN;
+  tag->data = malloc(AES_BLOCK_BYTE_LEN);
+  memcpy(tag->data, &ciphertext->data[ciphertext->len - tag->len], tag->len);
+
+  /* Free ciphertext and iv */
+  free(iv->data);
+  free(iv);
+  free(ciphertext->data);
+  free(ciphertext);
+
+  return tag;
+}
+
+int cbc_mac_tag(const CBCMacOptions* cbc_mac_options)
+{
+  AesKey* aes_key = get_aes_key(cbc_mac_options->key_file);
+  ByteBuf* padded_message = get_cbc_plaintext(cbc_mac_options->message_file);
+
+  ByteBuf* tag = generate_cbc_mac_tag(aes_key, padded_message);
 
   FILE* tag_fout = fopen(cbc_mac_options->output_file, "w");
-  fwrite((void *) &cbc_ciphertext->data[cbc_ciphertext->len - AES_BLOCK_BYTE_LEN],
-  1, AES_BLOCK_BYTE_LEN, tag_fout);
+  fwrite(tag->data, 1, AES_BLOCK_BYTE_LEN, tag_fout);
   fclose(tag_fout);
 
   return 1;
+}
+
+int cbc_mac_validate(const CBCMacOptions* cbc_mac_options)
+{
+  AesKey* aes_key = get_aes_key(cbc_mac_options->key_file);
+  ByteBuf* padded_message = get_cbc_plaintext(cbc_mac_options->message_file);
+
+  /* Get tag for message */
+  ByteBuf* generated_tag = generate_cbc_mac_tag(aes_key, padded_message);
+
+  /* Get message tag from file */
+  ByteBuf* read_tag = read_file_contents(cbc_mac_options->output_file);
+
+  /* Compare generated tag vs. read tag */
+  if (memcmp(generated_tag->data, read_tag->data, AES_BLOCK_BYTE_LEN) == 0) {
+    return 1;
+  }
+
+  return 0;
 }
 
 const char* file_locker_arg_options = "d:p:r:vk:";

@@ -3,3 +3,9 @@
 cd ../bin
 
 ./cbcmac-tag -k ../test/test-aes-key -m ../test/test-cbcmac-tag-message -t ../test/test-cbcmac-test-tag
+
+printf "Valid tag output: "
+./cbcmac-validate -k ../test/test-aes-key -m ../test/test-cbcmac-tag-message -t ../test/test-cbcmac-test-tag
+
+printf "Invalid tag output: "
+./cbcmac-validate -k ../test/test-aes-key -m ../test/test-cbcmac-tag-message -t ../test/test-cbcmac-invalid-test-tag
