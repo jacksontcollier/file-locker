@@ -1,11 +1,18 @@
 #!/bin/bash
 
-cd ../bin
+cd ../../bin
 
-./cbcmac-tag -k ../test/test-aes-key -m ../test/test-cbcmac-tag-message -t ../test/test-cbcmac-test-tag
+SAMPLE_KEY_DIR=../test/sample-keys
+SAMPLE_DATA_DIR=../test/sample-data
+AES_KEY=$SAMPLE_KEY_DIR/aes-key
+MESSAGE_FILE=$SAMPLE_DATA_DIR/cbcmac-tag-message
+TAG_FILE=$SAMPLE_DATA_DIR/cbcmac-validate-message-tag
+BAD_TAG_FILE=$SAMPLE_DATA_DIR/cbcmac-validate-bad-message-tag
+
+./cbcmac-tag -k $AES_KEY -m $MESSAGE_FILE -t $TAG_FILE
 
 printf "Valid tag output: "
-./cbcmac-validate -k ../test/test-aes-key -m ../test/test-cbcmac-tag-message -t ../test/test-cbcmac-test-tag
+./cbcmac-validate -k $AES_KEY -m $MESSAGE_FILE -t $TAG_FILE
 
 printf "Invalid tag output: "
-./cbcmac-validate -k ../test/test-aes-key -m ../test/test-cbcmac-tag-message -t ../test/test-cbcmac-invalid-test-tag
+./cbcmac-validate -k $AES_KEY -m $MESSAGE_FILE -t $BAD_TAG_FILE

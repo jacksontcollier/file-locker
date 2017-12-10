@@ -1,11 +1,19 @@
 #!/bin/bash
 
-cd ../bin
+cd ../../bin
 
-./rsa-sign -k ../test/test-rsa-sig-secret-key -m ../test/test-rsa-sig-message -s ../test/test-rsa-sig-signature
+SAMPLE_KEY_DIR=../test/sample-keys
+SAMPLE_DATA_DIR=../test/sample-data
+PUBLIC_KEY_FILE=$SAMPLE_KEY_DIR/rsa-public-key
+SECRET_KEY_FILE=$SAMPLE_KEY_DIR/rsa-secret-key
+MESSAGE_FILE=$SAMPLE_DATA_DIR/rsa-sign-message
+SIGNATURE_FILE=$SAMPLE_DATA_DIR/rsa-validate-signature
+BAD_SIGNATURE_FILE=$SAMPLE_DATA_DIR/rsa-validate-bad-signature
+
+./rsa-sign -k $SECRET_KEY_FILE -m $MESSAGE_FILE -s $SIGNATURE_FILE
 
 printf "Valid message output: "
-./rsa-validate -k ../test/test-rsa-sig-public-key -m ../test/test-rsa-sig-message -s ../test/test-rsa-sig-signature
+./rsa-validate -k $PUBLIC_KEY_FILE -m $MESSAGE_FILE -s $SIGNATURE_FILE
 
 printf "Invalid message output: "
-./rsa-validate -k ../test/test-rsa-sig-public-key -m ../test/test-rsa-sig-message -s ../test/test-rsa-sig-bad-signature
+./rsa-validate -k $PUBLIC_KEY_FILE -m $MESSAGE_FILE -s $BAD_SIGNATURE_FILE
