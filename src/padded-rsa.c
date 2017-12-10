@@ -8,7 +8,7 @@
 #include <openssl/err.h>
 
 const char* rsa_enc_dec_arg_options = "k:i:o:";
-const char* rsa_keygen_arg_options = "p:s:n:i:c";
+const char* rsa_keygen_arg_options = "p:s:n:c:";
 
 void strip_newline(char* s)
 {

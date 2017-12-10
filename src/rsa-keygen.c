@@ -42,11 +42,7 @@ int main(int argc, char** argv)
   BIGNUM* rsa_sig_bn = generate_rsa_sig((char *) public_key_file_contents->data,
       public_key_file_contents->len, certificate_authority_secret_key);
 
-  /* get casig filename */
-  char* casig_file = malloc(
-      strlen(keygen_options->public_key_file) + strlen("-casig\0") + 1);
-  strcpy(casig_file, keygen_options->public_key_file);
-  strcat(casig_file, "-casig\0");
+  char* casig_file = get_casig_filename(keygen_options->public_key_file);
 
   /* Open and write casig to casig file */
   FILE* casig_fout = fopen(casig_file, "w");

@@ -93,11 +93,9 @@ int rsa_sign(const RSASigOptions* rsa_sig_options)
   SecretRSAKey* secret_rsa_key = read_file_SecretRSAKey(secret_rsa_key_fin);
   fclose(secret_rsa_key_fin);
 
-  FILE* message_fin = fopen(rsa_sig_options->message_file, "r");
-  char* message = read_single_line_file(message_fin);
-  fclose(message_fin);
+  ByteBuf* message = read_file_contents(rsa_sig_options->message_file);
 
-  BIGNUM* rsa_sig_bn = generate_rsa_sig(message, strlen(message),
+  BIGNUM* rsa_sig_bn = generate_rsa_sig((char*) message->data, message->len,
       secret_rsa_key);
 
   FILE* sig_fout = fopen(rsa_sig_options->sig_file, "w");
@@ -113,15 +111,11 @@ int rsa_validate(const RSASigOptions* rsa_sig_options)
   PublicRSAKey* public_rsa_key = read_file_PublicRSAKey(public_rsa_key_fin);
   fclose(public_rsa_key_fin);
 
-  FILE* message_fin = fopen(rsa_sig_options->message_file, "r");
-  char* message = read_single_line_file(message_fin);
-  fclose(message_fin);
+  ByteBuf* message = read_file_contents(rsa_sig_options->message_file);
+  ByteBuf* sig = read_file_contents(rsa_sig_options->sig_file);
 
-  FILE* sig_fin = fopen(rsa_sig_options->sig_file, "r");
-  char* sig = read_single_line_file(sig_fin);
-  fclose(sig_fin);
-
-  unsigned char* message_hash = sha_256_hash(message, strlen(message));
+  unsigned char* message_hash = sha_256_hash((char*) message->data,
+      message->len);
 
   BIGNUM* message_hash_bn = BN_new();
   message_hash_bn = BN_bin2bn(message_hash, SHA_256_BYTE_LEN,
@@ -132,7 +126,7 @@ int rsa_validate(const RSASigOptions* rsa_sig_options)
   BIGNUM* message_hash_mod_N = BN_new();
   BN_mod(message_hash_mod_N, message_hash_bn, public_rsa_key->N, bn_ctx);
   BIGNUM* sig_bn = BN_new();
-  BN_dec2bn(&sig_bn, sig);
+  BN_dec2bn(&sig_bn, (char*) sig->data);
 
   BIGNUM* inverted_sig_bn = BN_new();
   BN_mod_exp(inverted_sig_bn, sig_bn, public_rsa_key->e, public_rsa_key->N,
@@ -248,6 +242,14 @@ int cbc_mac_validate(const CBCMacOptions* cbc_mac_options)
   return 0;
 }
 
+char* get_casig_filename(char* key_filename)
+{
+  char* casig_file = malloc(strlen(key_filename) + strlen("-casig\0") + 1);
+  strcpy(casig_file, key_filename);
+  strcat(casig_file, "-casig\0");
+  return casig_file;
+}
+
 const char* file_locker_arg_options = "d:p:r:vk:";
 
 FileLockerOptions* new_FileLockerOptions()
@@ -303,6 +305,18 @@ void print_FileLockerOptions(const FileLockerOptions* file_locker_options)
   printf("Action Private Key: %s\n", file_locker_options->action_private_key);
   printf("Validating Public Key: %s\n",
       file_locker_options->validating_public_key);
+}
+
+int verify_action_public_key(char* action_pk_file, char* ca_pk_file)
+{
+  char* casig_file = get_casig_filename(action_pk_file);
+  RSASigOptions* rsa_sig_options = new_RSASigOptions();
+
+  rsa_sig_options->key_file = ca_pk_file;
+  rsa_sig_options->message_file = action_pk_file;
+  rsa_sig_options->sig_file = casig_file;
+
+  return rsa_validate(rsa_sig_options);
 }
 
 char* read_single_line_file(FILE* fin)

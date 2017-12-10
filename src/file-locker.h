@@ -48,6 +48,8 @@ int cbc_mac_tag(const CBCMacOptions* cbc_mac_options);
 
 int cbc_mac_validate(const CBCMacOptions* cbc_mac_options);
 
+char* get_casig_filename(char* key_filename);
+
 typedef struct file_locker_options
 {
   char* directory;
@@ -61,6 +63,8 @@ FileLockerOptions* new_FileLockerOptions();
 FileLockerOptions* parse_FileLockerOptions(int argc, char * const argv[]);
 
 void print_FileLockerOptions(const FileLockerOptions* file_locker_options);
+
+int verify_action_public_key(char* action_pk_file, char* ca_pk_file);
 
 char* read_single_line_file(FILE* fin);
 #endif
