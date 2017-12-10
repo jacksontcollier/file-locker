@@ -23,6 +23,7 @@ typedef struct rsa_keygen_options
 {
   char *public_key_file;
   char *secret_key_file;
+  char *certificate_authority_file;
   unsigned long num_bits;
   void (*print)(const struct rsa_keygen_options*);
 } RSAKeygenOptions;

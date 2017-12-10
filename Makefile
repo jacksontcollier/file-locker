@@ -73,8 +73,11 @@ $(BINDIR)/cbcmac-validate: $(BINDIR)/cbcmac-validate.o \
 	$(BINDIR)/padded-rsa.o $(BINDIR)/aes-modes.o $(LFLAGS) -o \
 	$(BINDIR)/cbcmac-validate
 
-$(BINDIR)/rsa-keygen: $(BINDIR)/rsa-keygen.o $(BINDIR)/padded-rsa.o
-	$(CC) $(BINDIR)/rsa-keygen.o $(BINDIR)/padded-rsa.o $(LFLAGS) -o $(BINDIR)/rsa-keygen
+$(BINDIR)/rsa-keygen: $(BINDIR)/rsa-keygen.o $(BINDIR)/aes-modes.o \
+                      $(BINDIR)/file-locker.o $(BINDIR)/padded-rsa.o
+	$(CC) $(BINDIR)/rsa-keygen.o $(BINDIR)/aes-modes.o \
+	$(BINDIR)/file-locker.o $(BINDIR)/padded-rsa.o $(LFLAGS) \
+	-o $(BINDIR)/rsa-keygen
 
 $(BINDIR)/lock: $(BINDIR)/lock.o $(BINDIR)/file-locker.o \
 		$(BINDIR)/padded-rsa.o $(BINDIR)/aes-modes.o

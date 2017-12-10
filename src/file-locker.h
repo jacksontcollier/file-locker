@@ -2,6 +2,7 @@
 #define FILELOCKER_H
 
 #include "aes-modes.h"
+#include "padded-rsa.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -20,6 +21,9 @@ RSASigOptions* parse_RSASigOptions(int argc, char * const argv[]);
 void print_RSASigOptions(const RSASigOptions* rsa_sig_options);
 
 unsigned char* sha_256_hash(char* data, size_t data_size);
+
+BIGNUM* generate_rsa_sig(char* message, size_t message_len,
+    SecretRSAKey* secret_rsa_key);
 
 int rsa_sign(const RSASigOptions* rsa_sig_options);
 

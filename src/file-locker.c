@@ -65,18 +65,11 @@ unsigned char* sha_256_hash(char* data, size_t data_size)
   return hash;
 }
 
-int rsa_sign(const RSASigOptions* rsa_sig_options)
+BIGNUM* generate_rsa_sig(char* message, size_t message_len,
+    SecretRSAKey* secret_rsa_key)
 {
-  FILE* secret_rsa_key_fin = fopen(rsa_sig_options->key_file, "r");
-  SecretRSAKey* secret_rsa_key = read_file_SecretRSAKey(secret_rsa_key_fin);
-  fclose(secret_rsa_key_fin);
-
-  FILE* message_fin = fopen(rsa_sig_options->message_file, "r");
-  char* message = read_single_line_file(message_fin);
-  fclose(message_fin);
-
   // Hash message using SHA 256
-  unsigned char* message_hash = sha_256_hash(message, strlen(message));
+  unsigned char* message_hash = sha_256_hash(message, message_len);
 
   // Encode hashed message as BN
   BIGNUM* message_hash_bn = BN_new();
@@ -89,10 +82,27 @@ int rsa_sign(const RSASigOptions* rsa_sig_options)
   BN_mod_exp(sig_bn, message_hash_bn, secret_rsa_key->d, secret_rsa_key->N,
       bn_ctx);
 
-  FILE* sig_fout = fopen(rsa_sig_options->sig_file, "w");
-  fprintf(sig_fout, "%s", BN_bn2dec(sig_bn));
-  fclose(sig_fout);
   BN_CTX_free(bn_ctx);
+
+  return sig_bn;
+}
+
+int rsa_sign(const RSASigOptions* rsa_sig_options)
+{
+  FILE* secret_rsa_key_fin = fopen(rsa_sig_options->key_file, "r");
+  SecretRSAKey* secret_rsa_key = read_file_SecretRSAKey(secret_rsa_key_fin);
+  fclose(secret_rsa_key_fin);
+
+  FILE* message_fin = fopen(rsa_sig_options->message_file, "r");
+  char* message = read_single_line_file(message_fin);
+  fclose(message_fin);
+
+  BIGNUM* rsa_sig_bn = generate_rsa_sig(message, strlen(message),
+      secret_rsa_key);
+
+  FILE* sig_fout = fopen(rsa_sig_options->sig_file, "w");
+  fprintf(sig_fout, "%s", BN_bn2dec(rsa_sig_bn));
+  fclose(sig_fout);
 
   return 1;
 }

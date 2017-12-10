@@ -8,7 +8,7 @@
 #include <openssl/err.h>
 
 const char* rsa_enc_dec_arg_options = "k:i:o:";
-const char* rsa_keygen_arg_options = "p:s:n:";
+const char* rsa_keygen_arg_options = "p:s:n:i:c";
 
 void strip_newline(char* s)
 {
@@ -71,6 +71,7 @@ RSAKeygenOptions* new_RSAKeygenOptions()
 
   options->public_key_file = NULL;
   options->secret_key_file = NULL;
+  options->certificate_authority_file = NULL;
   options->num_bits = 0;
   options->print = print_RSAKeygenOptions;
 
@@ -89,6 +90,9 @@ RSAKeygenOptions* parse_RSAKeygenOptions(const int argc, char * const argv[])
         break;
       case 's':
         keygen_options->secret_key_file = optarg;
+        break;
+      case 'c':
+        keygen_options->certificate_authority_file = optarg;
         break;
       case 'n':
         sscanf(optarg, "%ld", &(keygen_options->num_bits));
