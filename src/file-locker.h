@@ -7,6 +7,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define AES_192_BIT_KEY_BYTE_LEN 24
+
+#define SYMMETRIC_KEY_MANIFEST_FILE "symmetric-key-manifest"
+#define SYMMETRIC_KEY_MANIFEST_SIG_FILE "symmetric-key-manifest-sig"
+
 typedef struct rsa_sig_options
 {
   char* key_file;
@@ -65,6 +70,8 @@ FileLockerOptions* parse_FileLockerOptions(int argc, char * const argv[]);
 void print_FileLockerOptions(const FileLockerOptions* file_locker_options);
 
 int verify_action_public_key(char* action_pk_file, char* ca_pk_file);
+
+ByteBuf* gen_192_bit_aes_key();
 
 char* read_single_line_file(FILE* fin);
 #endif

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <openssl/rand.h>
 #include <openssl/sha.h>
 
 #define AES_BLOCK_BYTE_LEN 16
@@ -317,6 +318,17 @@ int verify_action_public_key(char* action_pk_file, char* ca_pk_file)
   rsa_sig_options->sig_file = casig_file;
 
   return rsa_validate(rsa_sig_options);
+}
+
+ByteBuf* gen_192_bit_aes_key()
+{
+  ByteBuf* aes_key = new_ByteBuf();
+  aes_key->len = AES_192_BIT_KEY_BYTE_LEN;
+  aes_key->data = malloc(aes_key->len);
+
+  while (!RAND_bytes(aes_key->data, AES_192_BIT_KEY_BYTE_LEN));
+
+  return aes_key;
 }
 
 char* read_single_line_file(FILE* fin)
