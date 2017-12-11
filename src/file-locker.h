@@ -73,5 +73,11 @@ int verify_action_public_key(char* action_pk_file, char* ca_pk_file);
 
 ByteBuf* gen_192_bit_aes_key();
 
+char* form_full_file_name(char* directory_name, char* file_name);
+
+char* form_tag_file_name(char* full_file_name);
+
+void lock_directory(char* directory, AesKey* aes_key);
+
 char* read_single_line_file(FILE* fin);
 #endif

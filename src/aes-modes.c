@@ -94,6 +94,12 @@ ByteBuf* new_ByteBuf()
   return byte_buf;
 }
 
+void free_ByteBuf(ByteBuf* byte_buf)
+{
+  free(byte_buf->data);
+  free(byte_buf);
+}
+
 AesKey* new_AesKey()
 {
   AesKey* aes_key;

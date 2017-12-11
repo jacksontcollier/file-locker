@@ -13,6 +13,8 @@ typedef struct byte_buf
 
 ByteBuf* new_ByteBuf();
 
+void free_ByteBuf(ByteBuf* byte_buf);
+
 typedef struct arg_flags
 {
   char *key_file;

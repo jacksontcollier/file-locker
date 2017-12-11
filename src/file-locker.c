@@ -2,6 +2,7 @@
 #include "aes-modes.h"
 #include "padded-rsa.h"
 
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -329,6 +330,72 @@ ByteBuf* gen_192_bit_aes_key()
   while (!RAND_bytes(aes_key->data, AES_192_BIT_KEY_BYTE_LEN));
 
   return aes_key;
+}
+
+char* form_full_file_name(char* directory_name, char* file_name)
+{
+  char* full_name = malloc(
+      strlen(directory_name) + strlen("/\0") + strlen(file_name) + 1);
+  strcpy(full_name, directory_name);
+  strcat(full_name, "/\0");
+  strcat(full_name, file_name);
+
+  return full_name;
+}
+
+char* form_tag_file_name(char* full_file_name)
+{
+  char* tag_file_name = malloc(strlen(full_file_name) + strlen(".tag\0") + 1);
+  strcpy(tag_file_name, full_file_name);
+  strcat(tag_file_name, ".tag\0");
+
+  return tag_file_name;
+}
+
+void lock_directory(char* directory, AesKey* aes_key)
+{
+  DIR *d;
+  struct dirent *file_entry;
+  d = opendir(directory);
+  ByteBuf* iv;
+  ByteBuf* padded_cbc_plaintext;
+  ByteBuf* padded_ciphertext;
+  ByteBuf* tag;
+  char* full_file_name;
+  char* tag_file_name;
+
+  d = opendir(directory);
+
+  if(d) {
+    while ((file_entry = readdir(d)) != NULL) {
+      if (strcmp(file_entry->d_name, ".") == 0 || strcmp(
+          file_entry->d_name, "..") == 0) {
+        continue;
+      }
+      full_file_name = form_full_file_name(directory, file_entry->d_name);
+      padded_cbc_plaintext = get_cbc_plaintext(full_file_name);
+      iv = generate_new_iv();
+
+      padded_ciphertext = cbc_aes_encrypt(aes_key, padded_cbc_plaintext, iv);
+
+      FILE* encrypted_source_fout = fopen(full_file_name, "w");
+      fwrite(padded_ciphertext->data, 1, padded_ciphertext->len,
+          encrypted_source_fout);
+      fclose(encrypted_source_fout);
+
+      tag = generate_cbc_mac_tag(aes_key, padded_ciphertext);
+      tag_file_name = form_tag_file_name(full_file_name);
+      FILE* tag_fout = fopen(tag_file_name, "w");
+      fwrite(tag->data, 1, tag->len, tag_fout);
+      fclose(tag_fout);
+
+      free_ByteBuf(iv);
+      free_ByteBuf(padded_cbc_plaintext);
+      free_ByteBuf(padded_ciphertext);
+      free(full_file_name);
+      free(tag_file_name);
+    }
+  }
 }
 
 char* read_single_line_file(FILE* fin)

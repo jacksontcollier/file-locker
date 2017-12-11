@@ -19,13 +19,17 @@ int main(int argc, char** argv)
 
   /* Generate aes key and convert to BIGNUM for rsa encryption */
   ByteBuf* aes_key_192 = gen_192_bit_aes_key();
+
+  AesKey* aes_key = new_AesKey();
+  aes_key->byte_encoding = aes_key_192;
+  aes_key->byte_len = AES_192_BIT_KEY_BYTE_LEN;
+  aes_key->bit_len = 192;
+
   BIGNUM* aes_key_192_bn = BN_new();
   BN_bin2bn(aes_key_192->data, AES_192_BIT_KEY_BYTE_LEN, aes_key_192_bn);
   BIGNUM* encrypted_aes_key_bn = padded_rsa_encrypt(aes_key_192_bn,
       action_public_key->N, action_public_key->e,
       action_public_key->num_bits);
-
-  fwrite(aes_key_192->data, 1, aes_key_192->len, stdout);
 
   /* Write encrypted aes key to symmetric-key-manifest */
   FILE* symmetric_key_manifest_fout = fopen(SYMMETRIC_KEY_MANIFEST_FILE, "w");
@@ -39,5 +43,6 @@ int main(int argc, char** argv)
   manifest_sig_options->sig_file = SYMMETRIC_KEY_MANIFEST_SIG_FILE;
   rsa_sign(manifest_sig_options);
 
+  lock_directory(file_locker_options->directory, aes_key);
   return 0;
 }

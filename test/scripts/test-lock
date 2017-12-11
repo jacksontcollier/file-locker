@@ -1,0 +1,17 @@
+#!/bin/bash
+
+cd ../
+SAMPLE_KEY_DIR=../test/sample-keys
+
+rm -rf test-lock-dir
+
+mkdir -p test-lock-dir
+mkdir -p test-lock-dir/lock-dir
+
+chmod a+w test-lock-dir/lock-dir
+
+cp ../src/* test-lock-dir/lock-dir/
+
+cd test-lock-dir
+
+../../bin/lock -d lock-dir -p ../sample-keys/unlocker-rsa-public-key -r ../sample-keys/locker-rsa-secret-key -vk ../sample-keys/ca-rsa-public-key
