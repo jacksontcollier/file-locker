@@ -9,8 +9,8 @@
 
 #define AES_192_BIT_KEY_BYTE_LEN 24
 
-#define SYMMETRIC_KEY_MANIFEST_FILE "symmetric-key-manifest"
-#define SYMMETRIC_KEY_MANIFEST_SIG_FILE "symmetric-key-manifest-sig"
+#define SYMMETRIC_KEY_MANIFEST_FILE "symmetric-key-manifest\0"
+#define SYMMETRIC_KEY_MANIFEST_SIG_FILE "symmetric-key-manifest-sig\0"
 
 typedef struct rsa_sig_options
 {
@@ -78,6 +78,8 @@ char* form_full_file_name(char* directory_name, char* file_name);
 char* form_tag_file_name(char* full_file_name);
 
 void lock_directory(char* directory, AesKey* aes_key);
+
+void unlock_directory(char* directory, AesKey* aes_key);
 
 char* read_single_line_file(FILE* fin);
 #endif

@@ -1,5 +1,7 @@
 #include "file-locker.h"
 
+#include <string.h>
+
 int main(int argc, char** argv)
 {
   FileLockerOptions* file_locker_options = parse_FileLockerOptions(argc, argv);
@@ -9,13 +11,6 @@ int main(int argc, char** argv)
     printf("Locker's public key failed validation. Burn it down\n");
     exit(1);
   }
-
-  /* Read in action public key */
-  FILE* action_public_key_fin = fopen(file_locker_options->action_public_key,
-      "r");
-  PublicRSAKey* action_public_key = read_file_PublicRSAKey(
-      action_public_key_fin);
-  fclose(action_public_key_fin);
 
   /* Validate symmetric key manifest */
   RSASigOptions* manifest_sig_options = new_RSASigOptions();
@@ -29,11 +24,14 @@ int main(int argc, char** argv)
   }
 
   /* Read contents of manifest file into */
-  FILE* manifest_fin = fopen(SYMMETRIC_KEY_MANIFEST_FILE, "r");
-  char* raw_encrypted_aes_key_192 = read_single_line_file(manifest_fin);
+  ByteBuf* raw_encrypted_aes_key_192 = read_file_contents(SYMMETRIC_KEY_MANIFEST_FILE);
+  char* null_terminated_aes = malloc(raw_encrypted_aes_key_192->len + 1);
+  memcpy(null_terminated_aes, raw_encrypted_aes_key_192->data,
+      raw_encrypted_aes_key_192->len);
+  null_terminated_aes[raw_encrypted_aes_key_192->len] = '\0';
 
-  BIGNUM* encrypted_aes_key_192_bn;
-  BN_dec2bn(&encrypted_aes_key_192_bn, raw_encrypted_aes_key_192);
+  BIGNUM* encrypted_aes_key_192_bn = BN_new();
+  BN_dec2bn(&encrypted_aes_key_192_bn, null_terminated_aes);
 
   FILE* action_private_key_fin = fopen(file_locker_options->action_private_key,
       "r");
@@ -51,7 +49,14 @@ int main(int argc, char** argv)
 
   BN_bn2bin(aes_key_192_bn, aes_key_192->data);
 
-  fwrite(aes_key_192->data, 1, AES_192_BIT_KEY_BYTE_LEN, stdout);
+  AesKey* aes_key = new_AesKey();
+  aes_key->byte_encoding = aes_key_192;
+  aes_key->byte_len = AES_192_BIT_KEY_BYTE_LEN;
+  aes_key->bit_len = 192;
+
+  unlock_directory(file_locker_options->directory, aes_key);
+  remove(SYMMETRIC_KEY_MANIFEST_FILE);
+  remove(SYMMETRIC_KEY_MANIFEST_SIG_FILE);
 
   return 0;
 }

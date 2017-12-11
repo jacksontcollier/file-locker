@@ -398,6 +398,73 @@ void lock_directory(char* directory, AesKey* aes_key)
   }
 }
 
+int has_tag_file_extension(char* file_name)
+{
+  if (strlen(file_name) > strlen(".tag\0")) {
+    char* extension = &file_name[strlen(file_name) - strlen(".tag\0")];
+    if (strcmp(extension, ".tag\0") == 0) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+char* remove_tag_file_extension(char* file_name)
+{
+  char* file = malloc(strlen(file_name) + 1);
+  strcpy(file, file_name);
+  file[strlen(file) - strlen(".tag\0")] = '\0';
+  return file;
+}
+
+void unlock_directory(char* directory, AesKey* aes_key)
+{
+  DIR *d;
+  struct dirent *file_entry;
+  d = opendir(directory);
+  ByteBuf* cbc_ciphertext;
+  ByteBuf* cbc_plaintext;
+  char* full_file_name;
+
+  d = opendir(directory);
+
+  if(d) {
+    while ((file_entry = readdir(d)) != NULL) {
+      if (strcmp(file_entry->d_name, ".") == 0 || strcmp(
+          file_entry->d_name, "..") == 0) {
+        continue;
+      }
+
+      if (has_tag_file_extension(file_entry->d_name)) {
+        /* Verify tag */
+        full_file_name = form_full_file_name(directory, file_entry->d_name);
+        char* without_file_extension = remove_tag_file_extension(full_file_name);
+
+        cbc_ciphertext = read_file_contents(without_file_extension);
+        ByteBuf* generated_tag = generate_cbc_mac_tag(aes_key, cbc_ciphertext);
+        ByteBuf* read_tag = read_file_contents(full_file_name);
+
+        if (!memcmp(generated_tag->data, read_tag->data, AES_BLOCK_BYTE_LEN)) {
+          remove(full_file_name);
+
+          cbc_plaintext = cbc_aes_decrypt(aes_key, cbc_ciphertext);
+          write_cbc_decrypted_ciphertext(cbc_plaintext, without_file_extension);
+
+          free(full_file_name);
+          free_ByteBuf(cbc_ciphertext);
+          free_ByteBuf(cbc_plaintext);
+          free_ByteBuf(generated_tag);
+          free_ByteBuf(read_tag);
+        } else {
+          printf("Failed tag validation. Burn it down\n");
+          exit(1);
+        }
+      }
+    }
+  }
+}
+
 char* read_single_line_file(FILE* fin)
 {
   char* contents = NULL;

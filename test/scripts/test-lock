@@ -8,8 +8,6 @@ rm -rf test-lock-dir
 mkdir -p test-lock-dir
 mkdir -p test-lock-dir/lock-dir
 
-chmod a+w test-lock-dir/lock-dir
-
 cp ../src/* test-lock-dir/lock-dir/
 
 cd test-lock-dir

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd ../test-lock-dir
+
+../../bin/unlock -d lock-dir -p ../sample-keys/locker-rsa-public-key -r ../sample-keys/unlocker-rsa-secret-key -vk ../sample-keys/ca-rsa-public-key
