@@ -25,6 +25,8 @@ int main(int argc, char** argv)
       action_public_key->N, action_public_key->e,
       action_public_key->num_bits);
 
+  fwrite(aes_key_192->data, 1, aes_key_192->len, stdout);
+
   /* Write encrypted aes key to symmetric-key-manifest */
   FILE* symmetric_key_manifest_fout = fopen(SYMMETRIC_KEY_MANIFEST_FILE, "w");
   fprintf(symmetric_key_manifest_fout, "%s", BN_bn2dec(encrypted_aes_key_bn));
